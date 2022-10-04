@@ -1,5 +1,5 @@
 import express, { json } from 'express';
-import Bcrypt from 'bcrypt';
+import bcrypt from 'bcrypt';
 
 const app = express();
 
@@ -8,13 +8,19 @@ app.listen(3001, () => console.log('server ok!'));
 
 const users = []; //a modo de prueba creo un obj y lo uso de acceso directo
 
-app.get('/users', (req, res) => res.json(users));
+app.get('/users', (req, res) => res.json(users)); //no se da acceso a cualquiera a users, esto es una prueba
 
-app.post('/users', (req, res) => {
-  const user = {
-    name: req.body.name,
-    pass: req.body.pass,
-  };
-  users.push(user)
-  res.status(201).send({message: "post ok"})
+app.post('/users', async (req, res) => {
+  try {
+    const genHash = await bcrypt.hash(req.body.pass, 10);
+    console.log("avhe: ", genHash);
+    const user = {
+      name: req.body.name,
+      pass: genHash,
+    };
+    users.push(user);
+    res.status(201).send({ message: 'post ok' });
+  } catch (error) {
+    res.json({ message: error.message });
+  }
 });
